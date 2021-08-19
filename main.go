@@ -12,12 +12,23 @@ import (
 func main() {
 	app := iris.New()
 	app.Get("/api/{apiCall:path}", func(ctx iris.Context) {
+		endpoint := "https://jsonplaceholder.typicode.com/"
+
 		apiCall := ctx.Params().Get("apiCall")
+		if len(apiCall) > 0 {
+			endpoint = fmt.Sprintf("%s%s", endpoint, apiCall)
+		}
+
+		rawQuery := ctx.Request().URL.RawQuery
+		if len(rawQuery) > 0 {
+			endpoint = fmt.Sprintf("%s?%s", endpoint, rawQuery)
+		}
+		
 		/*
 			https://jsonplaceholder.typicode.com/todos(/1)
 			https://jsonplaceholder.typicode.com/posts(/1)
 		*/
-		resp, err := http.Get(fmt.Sprintf("https://jsonplaceholder.typicode.com/%s", apiCall))
+		resp, err := http.Get(endpoint)
 		if err != nil {
 			ctx.JSON(iris.Map{"success": false, "error_message": err.Error()})
 			return
